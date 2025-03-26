@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Cube from './cube';
 
-const Canvas = () => {
+const CubeGenerator = () => {
   const initialPosition = {
     width: 500,
     height: 500,
-    x: 80, // 0 + s
-    y: 65,
+    x: 200,
+    y: 200,
     aX: -10,
     aY: -30,
     aZ: 0,
@@ -49,8 +49,6 @@ const Canvas = () => {
         height: position.height,
       });
 
-      newCube.rotateY(45);
-      newCube.drawCube(ctx);
       return;
     }
 
@@ -105,8 +103,8 @@ const Canvas = () => {
     <div>
       <canvas
         ref={canvas}
-        width='500'
-        height='500'
+        width='400'
+        height='400'
         style={{
           backgroundColor: 'white',
 
@@ -170,62 +168,4 @@ const Canvas = () => {
   );
 };
 
-export default Canvas;
-
-const newCube = {
-  vertices: [
-    { x: -50, y: -50, z: -50 },
-    { x: 50, y: -50, z: -50 },
-    { x: 50, y: 50, z: -50 },
-    { x: -50, y: 50, z: -50 },
-    { x: -50, y: -50, z: 50 },
-    { x: 50, y: -50, z: 50 },
-    { x: 50, y: 50, z: 50 },
-    { x: -50, y: 50, z: 50 },
-  ],
-  edges: [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 0],
-    [4, 5],
-    [5, 6],
-    [6, 7],
-    [7, 4],
-    [0, 4],
-    [1, 5],
-    [2, 6],
-    [3, 7],
-  ],
-
-  project(vertex) {
-    const distance = 200;
-    const perspective = distance / (distance - vertex.z);
-    return {
-      x: vertex.x * perspective + 500 / 2,
-      y: vertex.y * perspective + 500 / 2,
-    };
-  },
-
-  rotateY(angle) {
-    const sin = Math.sin(angle);
-    const cos = Math.cos(angle);
-    this.vertices.forEach((v) => {
-      const x = v.x * cos - v.z * sin;
-      const z = v.x * sin + v.z * cos;
-      v.x = x;
-      v.z = z;
-    });
-  },
-  drawCube(ctx) {
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
-    this.edges.forEach(([startIdx, endIdx]) => {
-      const start = this.project(this.vertices[startIdx]);
-      const end = this.project(this.vertices[endIdx]);
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
-    });
-  },
-};
+export default CubeGenerator;

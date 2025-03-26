@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import IsometricGrid from './Grid';
 
-export default function Grid() {
+export default function GridGenerator() {
   const canvasRef = useRef(null);
   const [size, setSize] = useState(5);
 

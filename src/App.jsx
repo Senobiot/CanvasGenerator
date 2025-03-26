@@ -1,9 +1,10 @@
 import './App.css';
-import Canvas from './components/Canvas';
-import Grid from './components/Grid';
+import CubeGenerator from './components/Cube';
+import GridGenerator from './components/Grid';
 
 function App() {
-  return <Grid />;
+  return <CubeGenerator />;
+  // return <GridGenerator />;
 }
 
 export default App;
