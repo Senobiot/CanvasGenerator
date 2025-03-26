@@ -116,7 +116,7 @@ export default class Cube {
     ctx.save();
     ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
     // ctx.translate(rect.x + rect.width / 2, rect.y + rect.height / 2);
-    ctx.translate(250, 250);
+    ctx.translate(rect.x, rect.y);
 
     const matrix = new DOMMatrix();
     matrix.rotateSelf(this.RotationX, this.RotationY, this.RotationZ);
@@ -127,11 +127,11 @@ export default class Cube {
     );
 
     const faceColors = [
-      'red', // Front
+      'lightblue', // Front
       'green', // Top
       'lightblue', // Left
-      'black', // Right
-      'yellow', // Bottom
+      'lightblue', // Right
+      'lightblue', // Bottom
       'lightblue', // Rear
     ];
 

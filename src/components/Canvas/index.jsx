@@ -2,8 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import Cube from './cube';
 
 const Canvas = () => {
-  const initialPosition = { x: 100, y: 100, z: 0, scale: 50 };
+  const initialPosition = {
+    width: 500,
+    height: 500,
+    x: 80, // 0 + s
+    y: 65,
+    aX: -10,
+    aY: -30,
+    aZ: 0,
+    s: 50,
+  };
   const [cube, setCube] = useState(null);
+  const [cubes, setCubes] = useState([initialPosition]);
   const [position, setPosition] = useState(initialPosition);
   const canvas = useRef(null);
 
@@ -25,15 +35,40 @@ const Canvas = () => {
   const drawCube = (ctx) => {
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
-    const cube = new Cube();
+    if (cubes.length < 2) {
+      const cube = new Cube();
+      cube.RotationX = position.aX;
+      cube.RotationY = position.aY;
+      cube.RotationZ = position.aZ;
+      cube.Scale = position.s;
 
-    cube.RotationX = position.x;
-    cube.RotationY = position.y;
-    cube.RotationZ = position.z;
-    cube.Scale = position.scale;
+      cube.Render(ctx, {
+        x: position.x,
+        y: position.y,
+        width: position.width,
+        height: position.height,
+      });
 
-    cube.Render(ctx, { x: 0, y: 0, width: 400, height: 400 });
-    setCube(cube);
+      newCube.rotateY(45);
+      newCube.drawCube(ctx);
+      return;
+    }
+
+    cubes.forEach((item) => {
+      const cube = new Cube();
+      console.log(item);
+      cube.RotationX = item.aX;
+      cube.RotationY = item.aY;
+      cube.RotationZ = item.aZ;
+      cube.Scale = item.s;
+
+      cube.Render(ctx, {
+        x: item.x,
+        y: item.y,
+        width: item.width,
+        height: item.height,
+      });
+    });
   };
 
   useEffect(() => {
@@ -43,42 +78,15 @@ const Canvas = () => {
 
   useEffect(() => {
     const canvasEl = canvas.current;
-    const ctx = canvasEl.getContext('2d');
 
     const handleCanvasClick = (event) => {
-      const rect = canvas.current.getBoundingClientRect();
-      const scale = window.devicePixelRatio || 1;
+      const { clientX, clientY } = event;
+      const { left, top } = canvas.current.getBoundingClientRect();
+      const clickX = clientX - left;
+      const clickY = clientY - top;
 
-      const clickX = (event.clientX - rect.left) * scale;
-      const clickY = (event.clientY - rect.top) * scale;
-      console.log(clickX, clickY);
-
-      const adjustedX = (clickX - rect.width / 2) / cube.Scale;
-      const adjustedY = -(clickY - rect.height / 2) / cube.Scale;
-      console.log(adjustedX, adjustedY);
-      let clickedFace = null;
-
-      cube.transformedFaces.forEach((vertices, index) => {
-        ctx.beginPath();
-
-        ctx.moveTo(vertices[0].x, -vertices[0].y);
-        vertices.slice(1).forEach((vertex) => ctx.lineTo(vertex.x, -vertex.y));
-        ctx.closePath();
-
-        if (ctx.isPointInPath(adjustedX, adjustedY)) {
-          console.log(`Клик по грани ${index}`);
-          clickedFace = index;
-
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-          ctx.fill();
-        }
-      });
-
-      if (clickedFace === null) {
-        console.log('Клик не попал на грани');
-      } else {
-        console.log(`Грань ${clickedFace} была кликнута`);
-      }
+      const newCube = { ...initialPosition, x: clickX, y: clickY };
+      setCubes((prevCubes) => [...prevCubes, newCube]);
     };
 
     canvasEl.addEventListener('click', handleCanvasClick);
@@ -86,7 +94,12 @@ const Canvas = () => {
     return () => {
       canvasEl.removeEventListener('click', handleCanvasClick);
     };
-  }, [cube]);
+  }, []);
+
+  useEffect(() => {
+    const ctx = canvas.current.getContext('2d');
+    drawCube(ctx);
+  }, [cubes]);
 
   return (
     <div>
@@ -108,11 +121,11 @@ const Canvas = () => {
             type='range'
             min='-100'
             max='100'
-            value={position.x}
-            onChange={handleInputChange('x')}
+            value={position.aX}
+            onChange={handleInputChange('aX')}
             style={{ width: '80%', accentColor: 'blue' }}
           />
-          <span style={{ marginLeft: '10px' }}>{position.x}</span>
+          <span style={{ marginLeft: '10px' }}>{position.aX}</span>
         </div>
         <div style={{ margin: '10px 0' }}>
           <label style={{ marginRight: '10px', color: 'green' }}>Y:</label>
@@ -120,11 +133,11 @@ const Canvas = () => {
             type='range'
             min='-100'
             max='100'
-            value={position.y}
-            onChange={handleInputChange('y')}
+            value={position.aY}
+            onChange={handleInputChange('aY')}
             style={{ width: '80%', accentColor: 'green' }}
           />
-          <span style={{ marginLeft: '10px' }}>{position.y}</span>
+          <span style={{ marginLeft: '10px' }}>{position.aY}</span>
         </div>
         <div style={{ margin: '10px 0' }}>
           <label style={{ marginRight: '10px', color: 'red' }}>Z:</label>
@@ -132,25 +145,25 @@ const Canvas = () => {
             type='range'
             min='-100'
             max='100'
-            value={position.z}
-            onChange={handleInputChange('z')}
+            value={position.aZ}
+            onChange={handleInputChange('aZ')}
             style={{ width: '80%', accentColor: 'red' }}
           />
-          <span style={{ marginLeft: '10px' }}>{position.z}</span>
+          <span style={{ marginLeft: '10px' }}>{position.aZ}</span>
         </div>
         <div style={{ margin: '10px 0' }}>
           <label style={{ marginRight: '10px', color: 'white' }}>S:</label>
           <input
             type='range'
-            min='0'
-            max='2'
-            step='0.1'
-            value={position.scale}
-            onChange={handleInputChange('scale')}
+            min='10'
+            max='100'
+            step='1'
+            value={position.s}
+            onChange={handleInputChange('s')}
             style={{ width: '60%', accentColor: 'white' }}
           />
-          <span style={{ marginLeft: '10px' }}>{position.scale}</span>
-          <button onClick={handleInputChange('scale', 'reset')}>Reset</button>
+          <span style={{ marginLeft: '10px' }}>{position.s}</span>
+          <button onClick={handleInputChange('s', 'reset')}>Reset</button>
         </div>
       </div>
     </div>
@@ -158,3 +171,61 @@ const Canvas = () => {
 };
 
 export default Canvas;
+
+const newCube = {
+  vertices: [
+    { x: -50, y: -50, z: -50 },
+    { x: 50, y: -50, z: -50 },
+    { x: 50, y: 50, z: -50 },
+    { x: -50, y: 50, z: -50 },
+    { x: -50, y: -50, z: 50 },
+    { x: 50, y: -50, z: 50 },
+    { x: 50, y: 50, z: 50 },
+    { x: -50, y: 50, z: 50 },
+  ],
+  edges: [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 0],
+    [4, 5],
+    [5, 6],
+    [6, 7],
+    [7, 4],
+    [0, 4],
+    [1, 5],
+    [2, 6],
+    [3, 7],
+  ],
+
+  project(vertex) {
+    const distance = 200;
+    const perspective = distance / (distance - vertex.z);
+    return {
+      x: vertex.x * perspective + 500 / 2,
+      y: vertex.y * perspective + 500 / 2,
+    };
+  },
+
+  rotateY(angle) {
+    const sin = Math.sin(angle);
+    const cos = Math.cos(angle);
+    this.vertices.forEach((v) => {
+      const x = v.x * cos - v.z * sin;
+      const z = v.x * sin + v.z * cos;
+      v.x = x;
+      v.z = z;
+    });
+  },
+  drawCube(ctx) {
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.edges.forEach(([startIdx, endIdx]) => {
+      const start = this.project(this.vertices[startIdx]);
+      const end = this.project(this.vertices[endIdx]);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    });
+  },
+};
